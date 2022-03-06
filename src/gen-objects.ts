@@ -289,8 +289,8 @@ export function addChartDefinition(target: PresSlide, type: CHART_NAME | IChartM
 	options.chartColors = Array.isArray(options.chartColors)
 		? options.chartColors
 		: options._type === CHART_TYPE.PIE || options._type === CHART_TYPE.DOUGHNUT
-		? PIECHART_COLORS
-		: BARCHART_COLORS
+			? PIECHART_COLORS
+			: BARCHART_COLORS
 	options.chartColorsOpacity = options.chartColorsOpacity && !isNaN(options.chartColorsOpacity) ? options.chartColorsOpacity : null
 	//
 	options.border = options.border && typeof options.border === 'object' ? options.border : null
@@ -936,6 +936,245 @@ export function addTableDefinition(
 	}
 }
 
+export function addBox(target: PresSlide, text: TextProps[], opts: TextPropsOptions, isPlaceholder: boolean, opt: ImageProps) {
+	let newObject: ISlideObject = {
+		_type: SLIDE_OBJECT_TYPES.iconShape,
+		shape: (opts && opts.shape) || SHAPE_TYPE.RECTANGLE,
+		text: !text || text.length === 0 ? [{ text: '', options: null }] : text,
+		options: opts || {},
+		image: null,
+		imageRid: null,
+		hyperlink: null,
+	}
+
+	function cleanOpts(itemOpts): TextPropsOptions {
+		// STEP 1: Set some options
+		{
+			// A.1: Color (placeholders should inherit their colors or override them, so don't default them)
+			if (!itemOpts.placeholder) {
+				itemOpts.color = itemOpts.color || newObject.options.color || target.color || DEF_FONT_COLOR
+			}
+
+			// A.2: Placeholder should inherit their bullets or override them, so don't default them
+			if (itemOpts.placeholder || isPlaceholder) {
+				itemOpts.bullet = itemOpts.bullet || false
+			}
+
+			// A.3: Text targeting a placeholder need to inherit the placeholders options (eg: margin, valign, etc.) (Issue #640)
+			if (itemOpts.placeholder && target._slideLayout && target._slideLayout._slideObjects) {
+				let placeHold = target._slideLayout._slideObjects.filter(
+					item => item._type === 'placeholder' && item.options && item.options.placeholder && item.options.placeholder === itemOpts.placeholder
+				)[0]
+				if (placeHold && placeHold.options) itemOpts = { ...itemOpts, ...placeHold.options }
+			}
+
+			// B:
+			if (itemOpts.shape === SHAPE_TYPE.LINE) {
+				// ShapeLineProps defaults
+				let newLineOpts: ShapeLineProps = {
+					type: itemOpts.line.type || 'solid',
+					color: itemOpts.line.color || DEF_SHAPE_LINE_COLOR,
+					transparency: itemOpts.line.transparency || 0,
+					width: itemOpts.line.width || 1,
+					dashType: itemOpts.line.dashType || 'solid',
+					beginArrowType: itemOpts.line.beginArrowType || null,
+					endArrowType: itemOpts.line.endArrowType || null,
+				}
+				if (typeof itemOpts.line === 'object') itemOpts.line = newLineOpts
+
+				// 3: Handle line (lots of deprecated opts)
+				if (typeof itemOpts.line === 'string') {
+					let tmpOpts = newLineOpts
+					tmpOpts.color = itemOpts.line!.toString() // @deprecated `itemOpts.line` string (was line color)
+					itemOpts.line = tmpOpts
+				}
+				if (typeof itemOpts.lineSize === 'number') itemOpts.line.width = itemOpts.lineSize // @deprecated (part of `ShapeLineProps` now)
+				if (typeof itemOpts.lineDash === 'string') itemOpts.line.dashType = itemOpts.lineDash // @deprecated (part of `ShapeLineProps` now)
+				if (typeof itemOpts.lineHead === 'string') itemOpts.line.beginArrowType = itemOpts.lineHead // @deprecated (part of `ShapeLineProps` now)
+				if (typeof itemOpts.lineTail === 'string') itemOpts.line.endArrowType = itemOpts.lineTail // @deprecated (part of `ShapeLineProps` now)
+			}
+
+			// C: Line opts
+			itemOpts.line = itemOpts.line || {}
+			itemOpts.lineSpacing = itemOpts.lineSpacing && !isNaN(itemOpts.lineSpacing) ? itemOpts.lineSpacing : null
+			itemOpts.lineSpacingMultiple = itemOpts.lineSpacingMultiple && !isNaN(itemOpts.lineSpacingMultiple) ? itemOpts.lineSpacingMultiple : null
+
+			// D: Transform text options to bodyProperties as thats how we build XML
+			itemOpts._bodyProp = itemOpts._bodyProp || {}
+			itemOpts._bodyProp.autoFit = itemOpts.autoFit || false // DEPRECATED: (3.3.0) If true, shape will collapse to text size (Fit To shape)
+			itemOpts._bodyProp.anchor = !itemOpts.placeholder ? TEXT_VALIGN.ctr : null // VALS: [t,ctr,b]
+			itemOpts._bodyProp.vert = itemOpts.vert || null // VALS: [eaVert,horz,mongolianVert,vert,vert270,wordArtVert,wordArtVertRtl]
+			itemOpts._bodyProp.wrap = typeof itemOpts.wrap === 'boolean' ? itemOpts.wrap : true
+
+			// E: Inset
+			if ((itemOpts.inset && !isNaN(Number(itemOpts.inset))) || itemOpts.inset === 0) {
+				itemOpts._bodyProp.lIns = inch2Emu(itemOpts.inset)
+				itemOpts._bodyProp.rIns = inch2Emu(itemOpts.inset)
+				itemOpts._bodyProp.tIns = inch2Emu(itemOpts.inset)
+				itemOpts._bodyProp.bIns = inch2Emu(itemOpts.inset)
+			}
+
+			// F: Transform @deprecated props
+			if (typeof itemOpts.underline === 'boolean' && itemOpts.underline === true) itemOpts.underline = { style: 'sng' }
+		}
+
+		// STEP 2: Transform `align`/`valign` to XML values, store in _bodyProp for XML gen
+		{
+			if ((itemOpts.align || '').toLowerCase().indexOf('c') === 0) itemOpts._bodyProp.align = TEXT_HALIGN.center
+			else if ((itemOpts.align || '').toLowerCase().indexOf('l') === 0) itemOpts._bodyProp.align = TEXT_HALIGN.left
+			else if ((itemOpts.align || '').toLowerCase().indexOf('r') === 0) itemOpts._bodyProp.align = TEXT_HALIGN.right
+			else if ((itemOpts.align || '').toLowerCase().indexOf('j') === 0) itemOpts._bodyProp.align = TEXT_HALIGN.justify
+
+			if ((itemOpts.valign || '').toLowerCase().indexOf('b') === 0) itemOpts._bodyProp.anchor = TEXT_VALIGN.b
+			else if ((itemOpts.valign || '').toLowerCase().indexOf('m') === 0) itemOpts._bodyProp.anchor = TEXT_VALIGN.ctr
+			else if ((itemOpts.valign || '').toLowerCase().indexOf('t') === 0) itemOpts._bodyProp.anchor = TEXT_VALIGN.t
+		}
+
+		// STEP 3: ROBUST: Set rational values for some shadow props if needed
+		correctShadowOptions(itemOpts.shadow)
+
+		return itemOpts
+	}
+
+	// STEP 1: Create/Clean object options
+	newObject.options = cleanOpts(newObject.options)
+
+	// STEP 2: Create/Clean text options
+	newObject.text.forEach(item => (item.options = cleanOpts(item.options || {})))
+
+	// STEP 3: Create hyperlinks
+	createHyperlinkRels(target, newObject.text || '')
+
+
+	let intPosX = opt.x || 0
+	let intPosY = opt.y || 0
+	let intWidth = opt.w || 0
+	let intHeight = opt.h || 0
+	let sizing = opt.sizing || null
+	let objHyperlink = opt.hyperlink || ''
+	let strImageData = opt.data || ''
+	let strImagePath = opt.path || ''
+	let imageRelId = getNewRelId(target)
+
+	// REALITY-CHECK:
+	if (!strImagePath && !strImageData) {
+		console.error(`ERROR: addImage() requires either 'data' or 'path' parameter!`)
+		return null
+	} else if (strImagePath && typeof strImagePath !== 'string') {
+		console.error(`ERROR: addImage() 'path' should be a string, ex: {path:'/img/sample.png'} - you sent ${strImagePath}`)
+		return null
+	} else if (strImageData && typeof strImageData !== 'string') {
+		console.error(`ERROR: addImage() 'data' should be a string, ex: {data:'image/png;base64,NMP[...]'} - you sent ${strImageData}`)
+		return null
+	} else if (strImageData && typeof strImageData === 'string' && strImageData.toLowerCase().indexOf('base64,') === -1) {
+		console.error("ERROR: Image `data` value lacks a base64 header! Ex: 'image/png;base64,NMP[...]')")
+		return null
+	}
+
+	// STEP 1: Set extension
+	// NOTE: Split to address URLs with params (eg: `path/brent.jpg?someParam=true`)
+	let strImgExtn =
+		strImagePath
+			.substring(strImagePath.lastIndexOf('/') + 1)
+			.split('?')[0]
+			.split('.')
+			.pop()
+			.split('#')[0] || 'png'
+
+	// However, pre-encoded images can be whatever mime-type they want (and good for them!)
+	if (strImageData && /image\/(\w+);/.exec(strImageData) && /image\/(\w+);/.exec(strImageData).length > 0) {
+		strImgExtn = /image\/(\w+);/.exec(strImageData)[1]
+	} else if (strImageData && strImageData.toLowerCase().indexOf('image/svg+xml') > -1) {
+		strImgExtn = 'svg'
+	}
+
+	// STEP 2: Set type/path
+	newObject._type = SLIDE_OBJECT_TYPES.image
+	newObject.image = strImagePath || 'preencoded.png'
+
+	// STEP 3: Set image properties & options
+	// FIXME: Measure actual image when no intWidth/intHeight params passed
+	// ....: This is an async process: we need to make getSizeFromImage use callback, then set H/W...
+	// if ( !intWidth || !intHeight ) { var imgObj = getSizeFromImage(strImagePath);
+	newObject.options = {
+		x: intPosX || 0,
+		y: intPosY || 0,
+		w: intWidth || 1,
+		h: intHeight || 1,
+		altText: opt.altText || '',
+		rounding: typeof opt.rounding === 'boolean' ? opt.rounding : false,
+		sizing: sizing,
+		placeholder: opt.placeholder,
+		rotate: opt.rotate || 0,
+		flipV: opt.flipV || false,
+		flipH: opt.flipH || false,
+	}
+
+	// STEP 4: Add this image to this Slide Rels (rId/rels count spans all slides! Count all images to get next rId)
+	if (strImgExtn === 'svg') {
+		// SVG files consume *TWO* rId's: (a png version and the svg image)
+		// <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/>
+		// <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image2.svg"/>
+		target._relsMedia.push({
+			path: strImagePath || strImageData + 'png',
+			type: 'image/png',
+			extn: 'png',
+			data: strImageData || '',
+			rId: imageRelId,
+			Target: '../media/image-' + target._slideNum + '-' + (target._relsMedia.length + 1) + '.png',
+			isSvgPng: true,
+			svgSize: { w: getSmartParseNumber(newObject.options.w, 'X', target._presLayout), h: getSmartParseNumber(newObject.options.h, 'Y', target._presLayout) },
+		})
+		newObject.imageRid = imageRelId
+		target._relsMedia.push({
+			path: strImagePath || strImageData,
+			type: 'image/svg+xml',
+			extn: strImgExtn,
+			data: strImageData || '',
+			rId: imageRelId + 1,
+			Target: '../media/image-' + target._slideNum + '-' + (target._relsMedia.length + 1) + '.' + strImgExtn,
+		})
+		newObject.imageRid = imageRelId + 1
+	} else {
+		// PERF: Duplicate media should reuse existing `Target` value and not create an additional copy
+		const dupeItem = target._relsMedia.filter(item => item.path && item.path === strImagePath && item.type === 'image/' + strImgExtn && item.isDuplicate === false)[0]
+
+		target._relsMedia.push({
+			path: strImagePath || 'preencoded.' + strImgExtn,
+			type: 'image/' + strImgExtn,
+			extn: strImgExtn,
+			data: strImageData || '',
+			rId: imageRelId,
+			isDuplicate: dupeItem && dupeItem.Target ? true : false,
+			Target: dupeItem && dupeItem.Target ? dupeItem.Target : `../media/image-${target._slideNum}-${target._relsMedia.length + 1}.${strImgExtn}`,
+		})
+		newObject.imageRid = imageRelId
+	}
+
+	// STEP 5: Hyperlink support
+	if (typeof objHyperlink === 'object') {
+		if (!objHyperlink.url && !objHyperlink.slide) throw new Error('ERROR: `hyperlink` option requires either: `url` or `slide`')
+		else {
+			imageRelId++
+
+			target._rels.push({
+				type: SLIDE_OBJECT_TYPES.hyperlink,
+				data: objHyperlink.slide ? 'slide' : 'dummy',
+				rId: imageRelId,
+				Target: objHyperlink.url || objHyperlink.slide.toString(),
+			})
+
+			objHyperlink._rId = imageRelId
+			newObject.hyperlink = objHyperlink
+		}
+	}
+
+	// STEP 6: Add object to slide
+
+	// LAST: Add object to Slide
+	target._slideObjects.push(newObject)
+}
+
 /**
  * Adds a text object to a slide definition.
  * @param {PresSlide} target - slide object that the text should be added to
@@ -1060,7 +1299,7 @@ export function addTextDefinition(target: PresSlide, text: TextProps[], opts: Te
  */
 export function addPlaceholdersToSlideLayouts(slide: PresSlide) {
 	// Add all placeholders on this Slide that dont already exist
-	;(slide._slideLayout._slideObjects || []).forEach(slideLayoutObj => {
+	; (slide._slideLayout._slideObjects || []).forEach(slideLayoutObj => {
 		if (slideLayoutObj._type === SLIDE_OBJECT_TYPES.placeholder) {
 			// A: Search for this placeholder on Slide before we add
 			// NOTE: Check to ensure a placeholder does not already exist on the Slide

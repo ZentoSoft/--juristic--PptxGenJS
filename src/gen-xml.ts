@@ -295,6 +295,12 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 		if (slideItemObj.options.flipV) locationAttr += ' flipV="1"'
 		if (slideItemObj.options.rotate) locationAttr += ' rot="' + convertRotationDegrees(slideItemObj.options.rotate) + '"'
 
+		let imageOpts = slideItemObj.options as ImageProps
+		let sizing = null,
+			rounding = null,
+			width = null,
+			height = null
+
 		// B: Add OBJECT to the current Slide
 		switch (slideItemObj._type) {
 			case SLIDE_OBJECT_TYPES.table:
@@ -830,8 +836,8 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 				break
 
 			case SLIDE_OBJECT_TYPES.image:
-				let imageOpts = slideItemObj.options as ImageProps
-				let sizing = imageOpts.sizing,
+				imageOpts = slideItemObj.options as ImageProps
+				sizing = imageOpts.sizing,
 					rounding = imageOpts.rounding,
 					width = cx,
 					height = cy
@@ -965,6 +971,277 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 				strSlideXml += ' </a:graphic>'
 				strSlideXml += '</p:graphicFrame>'
 				break
+
+
+			case SLIDE_OBJECT_TYPES.iconShape:
+
+				// add group header
+				strSlideXml += "<p:grpSp> <p:nvGrpSpPr>";
+				strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId}" name="Group ${idx + 1}"></p:cNvPr>`;
+				strSlideXml += "<p:cNvGrpSpPr /> <p:nvPr /> </p:nvGrpSpPr>";
+				strSlideXml += "<p:grpSpPr>";
+				strSlideXml += `<a:xfrm>
+									<a:off x="${x}" y="${y} />
+									<a:ext cx="${cx}" cy=${cy} />
+									<a:chOff x="${x}" y="${y} />
+									<a:chExt cx="${cx}" cy=${cy} />
+								</a:xfrm>`;
+				strSlideXml += "</p:grpSpPr>";
+
+				//=========================================================================================================================
+				let shapeName = slideItemObj.options.shapeName ? encodeXmlEntities(slideItemObj.options.shapeName) : `Object${idx + 1}`
+
+				// Lines can have zero cy, but text should not
+				if (!slideItemObj.options.line && cy === 0) cy = EMU * 0.3
+
+				// Margin/Padding/Inset for textboxes
+				if (!slideItemObj.options._bodyProp) slideItemObj.options._bodyProp = {}
+				if (slideItemObj.options.margin && Array.isArray(slideItemObj.options.margin)) {
+					slideItemObj.options._bodyProp.lIns = valToPts(slideItemObj.options.margin[0] || 0)
+					slideItemObj.options._bodyProp.rIns = valToPts(slideItemObj.options.margin[1] || 0)
+					slideItemObj.options._bodyProp.bIns = valToPts(slideItemObj.options.margin[2] || 0)
+					slideItemObj.options._bodyProp.tIns = valToPts(slideItemObj.options.margin[3] || 0)
+				} else if (typeof slideItemObj.options.margin === 'number') {
+					slideItemObj.options._bodyProp.lIns = valToPts(slideItemObj.options.margin)
+					slideItemObj.options._bodyProp.rIns = valToPts(slideItemObj.options.margin)
+					slideItemObj.options._bodyProp.bIns = valToPts(slideItemObj.options.margin)
+					slideItemObj.options._bodyProp.tIns = valToPts(slideItemObj.options.margin)
+				}
+
+				// A: Start SHAPE =======================================================
+				strSlideXml += '<p:sp>'
+
+				// B: The addition of the "txBox" attribute is the sole determiner of if an object is a shape or textbox
+				if (slideItemObj.options.sId != undefined) {
+					strSlideXml += `<p:nvSpPr><p:cNvPr id="${slideItemObj.options.sId}" name="${shapeName}">`
+				}
+				else {
+					strSlideXml += `<p:nvSpPr><p:cNvPr id="${idx + 2}" name="${shapeName}">`
+				}
+				// <Hyperlink>
+				if (slideItemObj.options.hyperlink && slideItemObj.options.hyperlink.url)
+					strSlideXml +=
+						'<a:hlinkClick r:id="rId' +
+						slideItemObj.options.hyperlink._rId +
+						'" tooltip="' +
+						(slideItemObj.options.hyperlink.tooltip ? encodeXmlEntities(slideItemObj.options.hyperlink.tooltip) : '') +
+						'"/>'
+				if (slideItemObj.options.hyperlink && slideItemObj.options.hyperlink.slide)
+					strSlideXml +=
+						'<a:hlinkClick r:id="rId' +
+						slideItemObj.options.hyperlink._rId +
+						'" tooltip="' +
+						(slideItemObj.options.hyperlink.tooltip ? encodeXmlEntities(slideItemObj.options.hyperlink.tooltip) : '') +
+						'" action="ppaction://hlinksldjump"/>'
+				// </Hyperlink>
+				strSlideXml += '</p:cNvPr>'
+				strSlideXml += '<p:cNvSpPr' + (slideItemObj.options && slideItemObj.options.isTextBox ? ' txBox="1"/>' : '/>')
+				strSlideXml += `<p:nvPr>${genXmlPlaceholder(placeholderObj)}</p:nvPr>`
+				strSlideXml += '</p:nvSpPr><p:spPr>'
+				strSlideXml += `<a:xfrm${locationAttr}>`
+				strSlideXml += `<a:off x="${x}" y="${y}"/>`
+				strSlideXml += `<a:ext cx="${cx}" cy="${cy}"/></a:xfrm>`
+
+				if (slideItemObj.shape === 'custGeom') {
+					strSlideXml += '<a:custGeom><a:avLst />'
+					strSlideXml += '<a:gdLst>'
+					strSlideXml += '</a:gdLst>'
+					strSlideXml += '<a:ahLst />'
+					strSlideXml += '<a:cxnLst>'
+					strSlideXml += '</a:cxnLst>'
+					strSlideXml += '<a:rect l="l" t="t" r="r" b="b" />'
+
+					strSlideXml += '<a:pathLst>'
+					strSlideXml += `<a:path w="${cx}" h="${cy}">`
+
+					slideItemObj.options.points?.map((point, i) => {
+						if ('curve' in point) {
+							switch (point.curve.type) {
+								case 'arc':
+									strSlideXml += `<a:arcTo hR="${getSmartParseNumber(point.curve.hR, 'Y', slide._presLayout)}" wR="${getSmartParseNumber(
+										point.curve.wR,
+										'X',
+										slide._presLayout
+									)}" stAng="${convertRotationDegrees(point.curve.stAng)}" swAng="${convertRotationDegrees(point.curve.swAng)}" />`
+									break
+								case 'cubic':
+									strSlideXml += `<a:cubicBezTo>
+								<a:pt x="${getSmartParseNumber(point.curve.x1, 'X', slide._presLayout)}" y="${getSmartParseNumber(point.curve.y1, 'Y', slide._presLayout)}" />
+								<a:pt x="${getSmartParseNumber(point.curve.x2, 'X', slide._presLayout)}" y="${getSmartParseNumber(point.curve.y2, 'Y', slide._presLayout)}" />
+								<a:pt x="${getSmartParseNumber(point.x, 'X', slide._presLayout)}" y="${getSmartParseNumber(point.y, 'Y', slide._presLayout)}" />
+								</a:cubicBezTo>`
+									break
+								case 'quadratic':
+									strSlideXml += `<a:quadBezTo>
+								<a:pt x="${getSmartParseNumber(point.curve.x1, 'X', slide._presLayout)}" y="${getSmartParseNumber(point.curve.y1, 'Y', slide._presLayout)}" />
+								<a:pt x="${getSmartParseNumber(point.x, 'X', slide._presLayout)}" y="${getSmartParseNumber(point.y, 'Y', slide._presLayout)}" />
+								</a:quadBezTo>`
+									break
+								default:
+									break
+							}
+						} else if ('close' in point) {
+							strSlideXml += `<a:close />`
+						} else if (point.moveTo || i === 0) {
+							strSlideXml += `<a:moveTo><a:pt x="${getSmartParseNumber(point.x, 'X', slide._presLayout)}" y="${getSmartParseNumber(
+								point.y,
+								'Y',
+								slide._presLayout
+							)}" /></a:moveTo>`
+						} else {
+							strSlideXml += `<a:lnTo><a:pt x="${getSmartParseNumber(point.x, 'X', slide._presLayout)}" y="${getSmartParseNumber(
+								point.y,
+								'Y',
+								slide._presLayout
+							)}" /></a:lnTo>`
+						}
+					})
+
+					strSlideXml += '</a:path>'
+					strSlideXml += '</a:pathLst>'
+					strSlideXml += '</a:custGeom>'
+				} else {
+					strSlideXml += '<a:prstGeom prst="' + slideItemObj.shape + '"><a:avLst>'
+					if (slideItemObj.options.rectRadius) {
+						strSlideXml += `<a:gd name="adj" fmla="val ${Math.round((slideItemObj.options.rectRadius * EMU * 100000) / Math.min(cx, cy))}"/>`
+					} else if (slideItemObj.options.angleRange) {
+						for (let i = 0; i < 2; i++) {
+							const angle = slideItemObj.options.angleRange[i]
+							strSlideXml += `<a:gd name="adj${i + 1}" fmla="val ${convertRotationDegrees(angle)}" />`
+						}
+
+						if (slideItemObj.options.arcThicknessRatio) {
+							strSlideXml += `<a:gd name="adj3" fmla="val ${Math.round(slideItemObj.options.arcThicknessRatio * 50000)}" />`
+						}
+					}
+					strSlideXml += '</a:avLst></a:prstGeom>'
+				}
+
+				// Option: FILL
+				strSlideXml += slideItemObj.options.fill ? genXmlColorSelection(slideItemObj.options.fill) : '<a:noFill/>'
+
+				// shape Type: LINE: line color
+				if (slideItemObj.options.line) {
+					strSlideXml += slideItemObj.options.line.width ? `<a:ln w="${valToPts(slideItemObj.options.line.width)}">` : '<a:ln>'
+					if (slideItemObj.options.line.color) strSlideXml += genXmlColorSelection(slideItemObj.options.line)
+					if (slideItemObj.options.line.dashType) strSlideXml += `<a:prstDash val="${slideItemObj.options.line.dashType}"/>`
+					if (slideItemObj.options.line.beginArrowType) strSlideXml += `<a:headEnd type="${slideItemObj.options.line.beginArrowType}"/>`
+					if (slideItemObj.options.line.endArrowType) strSlideXml += `<a:tailEnd type="${slideItemObj.options.line.endArrowType}"/>`
+					// FUTURE: `endArrowSize` < a: headEnd type = "arrow" w = "lg" len = "lg" /> 'sm' | 'med' | 'lg'(values are 1 - 9, making a 3x3 grid of w / len possibilities)
+					strSlideXml += '</a:ln>'
+				}
+
+				// EFFECTS > SHADOW: REF: @see http://officeopenxml.com/drwSp-effects.php
+				if (slideItemObj.options.shadow) {
+					slideItemObj.options.shadow.type = slideItemObj.options.shadow.type || 'outer'
+					slideItemObj.options.shadow.blur = valToPts(slideItemObj.options.shadow.blur || 8)
+					slideItemObj.options.shadow.offset = valToPts(slideItemObj.options.shadow.offset || 4)
+					slideItemObj.options.shadow.angle = Math.round((slideItemObj.options.shadow.angle || 270) * 60000)
+					slideItemObj.options.shadow.opacity = Math.round((slideItemObj.options.shadow.opacity || 0.75) * 100000)
+					slideItemObj.options.shadow.color = slideItemObj.options.shadow.color || DEF_TEXT_SHADOW.color
+
+					strSlideXml += '<a:effectLst>'
+					strSlideXml += '<a:' + slideItemObj.options.shadow.type + 'Shdw sx="100000" sy="100000" kx="0" ky="0" '
+					strSlideXml += ' algn="bl" rotWithShape="0" blurRad="' + slideItemObj.options.shadow.blur + '" '
+					strSlideXml += ' dist="' + slideItemObj.options.shadow.offset + '" dir="' + slideItemObj.options.shadow.angle + '">'
+					strSlideXml += '<a:srgbClr val="' + slideItemObj.options.shadow.color + '">'
+					strSlideXml += '<a:alpha val="' + slideItemObj.options.shadow.opacity + '"/></a:srgbClr>'
+					strSlideXml += '</a:outerShdw>'
+					strSlideXml += '</a:effectLst>'
+				}
+
+				/* TODO: FUTURE: Text wrapping (copied from MS-PPTX export)
+					// Commented out b/c i'm not even sure this works - current code produces text that wraps in shapes and textboxes, so...
+					if ( slideItemObj.options.textWrap ) {
+						strSlideXml += '<a:extLst>'
+									+ '<a:ext uri="{C572A759-6A51-4108-AA02-DFA0A04FC94B}">'
+									+ '<ma14:wrappingTextBoxFlag xmlns:ma14="http://schemas.microsoft.com/office/mac/drawingml/2011/main" val="1"/>'
+									+ '</a:ext>'
+									+ '</a:extLst>';
+					}
+					*/
+
+				// B: Close shape Properties
+				strSlideXml += '</p:spPr>'
+
+				// C: Add formatted text (text body "bodyPr")
+				strSlideXml += genXmlTextBody(slideItemObj)
+
+				// LAST: Close SHAPE =======================================================
+				strSlideXml += '</p:sp>'
+
+				//================================================================================================================================
+
+				imageOpts = slideItemObj.options as ImageProps
+				sizing = imageOpts.sizing,
+					rounding = imageOpts.rounding,
+					width = cx,
+					height = cy
+
+				strSlideXml += '<p:pic>'
+				strSlideXml += '  <p:nvPicPr>'
+				if (slideItemObj.options.sId != undefined) {
+					strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId}" name="Object ${idx + 1}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
+				} else {
+					strSlideXml += `<p:cNvPr id="${idx + 2}" name="Object ${idx + 1}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
+				}
+				if (slideItemObj.hyperlink && slideItemObj.hyperlink.url)
+					strSlideXml += `<a:hlinkClick r:id="rId${slideItemObj.hyperlink._rId}" tooltip="${slideItemObj.hyperlink.tooltip ? encodeXmlEntities(slideItemObj.hyperlink.tooltip) : ''
+						}"/>`
+				if (slideItemObj.hyperlink && slideItemObj.hyperlink.slide)
+					strSlideXml += `<a:hlinkClick r:id="rId${slideItemObj.hyperlink._rId}" tooltip="${slideItemObj.hyperlink.tooltip ? encodeXmlEntities(slideItemObj.hyperlink.tooltip) : ''
+						}" action="ppaction://hlinksldjump"/>`
+				strSlideXml += '    </p:cNvPr>'
+				strSlideXml += '    <p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr>'
+				strSlideXml += '    <p:nvPr>' + genXmlPlaceholder(placeholderObj) + '</p:nvPr>'
+				strSlideXml += '  </p:nvPicPr>'
+				strSlideXml += '<p:blipFill>'
+				// NOTE: This works for both cases: either `path` or `data` contains the SVG
+				if (
+					(slide._relsMedia || []).filter(rel => rel.rId === slideItemObj.imageRid)[0] &&
+					(slide._relsMedia || []).filter(rel => rel.rId === slideItemObj.imageRid)[0]['extn'] === 'svg'
+				) {
+					strSlideXml += '<a:blip r:embed="rId' + (slideItemObj.imageRid - 1) + '">'
+					strSlideXml += ' <a:extLst>'
+					strSlideXml += '  <a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">'
+					strSlideXml += '   <asvg:svgBlip xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main" r:embed="rId' + slideItemObj.imageRid + '"/>'
+					strSlideXml += '  </a:ext>'
+					strSlideXml += ' </a:extLst>'
+					strSlideXml += '</a:blip>'
+				} else {
+					strSlideXml += '<a:blip r:embed="rId' + slideItemObj.imageRid + '"/>'
+				}
+				if (sizing && sizing.type) {
+					let boxW = sizing.w ? getSmartParseNumber(sizing.w, 'X', slide._presLayout) : cx,
+						boxH = sizing.h ? getSmartParseNumber(sizing.h, 'Y', slide._presLayout) : cy,
+						boxX = getSmartParseNumber(sizing.x || 0, 'X', slide._presLayout),
+						boxY = getSmartParseNumber(sizing.y || 0, 'Y', slide._presLayout)
+
+					strSlideXml += imageSizingXml[sizing.type]({ w: width, h: height }, { w: boxW, h: boxH, x: boxX, y: boxY })
+					width = boxW
+					height = boxH
+				} else {
+					strSlideXml += '  <a:stretch><a:fillRect/></a:stretch>'
+				}
+				strSlideXml += '</p:blipFill>'
+				strSlideXml += '<p:spPr>'
+				strSlideXml += ' <a:xfrm' + locationAttr + '>'
+				strSlideXml += '  <a:off x="' + x + '" y="' + y + '"/>'
+				strSlideXml += '  <a:ext cx="' + width + '" cy="' + height + '"/>'
+				strSlideXml += ' </a:xfrm>'
+				strSlideXml += ' <a:prstGeom prst="' + (rounding ? 'ellipse' : 'rect') + '"><a:avLst/></a:prstGeom>'
+				strSlideXml += '</p:spPr>'
+				strSlideXml += '</p:pic>'
+				break
+
+
+
+				strSlideXml += "</p:grpSp>"
+
+
+
+
+
 
 			default:
 				strSlideXml += ''
