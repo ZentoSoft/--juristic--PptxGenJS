@@ -693,8 +693,8 @@ export interface TableToSlidesProps extends TableProps {
 	 */
 	addText?: { text: any[]; options: {} }
 	/**
-		 * specialized function for image in box shapes
-		 */
+	  * specialized function for image in box shapes
+	*/
 	addBox?: { text: any[]; options: {}; imageoptions: {} }
 	/**
 	 * Whether to enable auto-paging
