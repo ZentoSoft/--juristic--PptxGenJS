@@ -2250,6 +2250,7 @@ declare namespace PptxGenJS {
 		addShape: Function
 		addTable: Function
 		addText: Function
+		addBox: Function
 
 		/**
 		 * Background color or image (`Color` | `path` | `data`)
@@ -2380,6 +2381,8 @@ declare namespace PptxGenJS {
 		 * @return {Slide} this Slide
 		 */
 		addText(text: string | TextProps[], options?: TextPropsOptions): Slide
+
+		addbox(text: string|TextProps[], options?: TextBaseProps, imageoptions?: ImageProps): Slide
 
 		/**
 		 * Background color

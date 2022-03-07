@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-07T17:09:36.311Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-07T18:02:14.004Z */
 'use strict';
 
 var JSZip = require('jszip');
@@ -1538,6 +1538,8 @@ function genTableToSlides(pptx, tabEleId, options, masterSlide) {
             newSlide.addTable(opts.addTable.rows, opts.addTable.options || {});
         if (opts.addText)
             newSlide.addText(opts.addText.text, opts.addText.options || {});
+        if (opts.addBox)
+            newSlide.addBox(opts.addBox.text, opts.addBox.options || {}, opts.addBox.imageoptions || {});
     });
 }
 

@@ -729,5 +729,6 @@ export function genTableToSlides(pptx: PptxGenJS, tabEleId: string, options: Tab
 		if (opts.addShape) newSlide.addShape(opts.addShape.shape, opts.addShape.options || {})
 		if (opts.addTable) newSlide.addTable(opts.addTable.rows, opts.addTable.options || {})
 		if (opts.addText) newSlide.addText(opts.addText.text, opts.addText.options || {})
+		if (opts.addBox) newSlide.addBox(opts.addBox.text, opts.addBox.options || {}, opts.addBox.imageoptions||{})
 	})
 }
