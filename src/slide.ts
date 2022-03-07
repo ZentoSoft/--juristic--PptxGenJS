@@ -231,9 +231,17 @@ export default class Slide {
 		return this
 	}
 
+	/**
+	 * 
+	 * @param {string | TextProps[]} text  text string
+	 * @param {TextPropsOptions} options text options
+	 * @param {ImageProps} imageoptions image options
+	 * @returns {Slide} this Slide
+	 */
+
 	addBox(text: string | TextProps[], options?: TextPropsOptions, imageoptions?: ImageProps): Slide {
 		let textParam = typeof text === 'string' || typeof text === 'number' ? [{ text: text, options: options } as TextProps] : text
-		genObj.addBox(this,textParam,options,false, imageoptions)
+		genObj.addBox(this, textParam, options, false, imageoptions)
 		return this
 	}
 

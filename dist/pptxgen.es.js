@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-06T21:15:49.576Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-07T09:58:19.188Z */
 import JSZip from 'jszip';
 
 /*! *****************************************************************************
@@ -5206,6 +5206,13 @@ var Slide = /** @class */ (function () {
         addTextDefinition(this, textParam, options, false);
         return this;
     };
+    /**
+     *
+     * @param {string | TextProps[]} text  text string
+     * @param {TextPropsOptions} options text options
+     * @param {ImageProps} imageoptions image options
+     * @returns {Slide} this Slide
+     */
     Slide.prototype.addBox = function (text, options, imageoptions) {
         var textParam = typeof text === 'string' || typeof text === 'number' ? [{ text: text, options: options }] : text;
         addBox(this, textParam, options, false, imageoptions);
