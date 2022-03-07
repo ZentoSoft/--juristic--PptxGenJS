@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-07T18:02:14.018Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-07T18:34:35.029Z */
 import JSZip from 'jszip';
 
 /*! *****************************************************************************
@@ -2379,10 +2379,10 @@ function slideObjectToXml(slide) {
             case SLIDE_OBJECT_TYPES.iconShape:
                 // add group header
                 strSlideXml += "<p:grpSp> <p:nvGrpSpPr>";
-                strSlideXml += "<p:cNvPr id=\"" + slideItemObj.options.sId + "\" name=\"Group " + (idx + 1) + "\"></p:cNvPr>";
+                strSlideXml += "<p:cNvPr id=\"" + (slideItemObj.options.sId || idx + 2) + "\" name=\"Group " + (idx + 1) + "\"></p:cNvPr>";
                 strSlideXml += "<p:cNvGrpSpPr /> <p:nvPr /> </p:nvGrpSpPr>";
                 strSlideXml += "<p:grpSpPr>";
-                strSlideXml += "<a:xfrm>\n\t\t\t\t\t\t\t\t\t<a:off x=\"" + x + "\" y=\"" + y + " />\n\t\t\t\t\t\t\t\t\t<a:ext cx=\"" + cx + "\" cy=" + cy + " />\n\t\t\t\t\t\t\t\t\t<a:chOff x=\"" + x + "\" y=\"" + y + " />\n\t\t\t\t\t\t\t\t\t<a:chExt cx=\"" + cx + "\" cy=" + cy + " />\n\t\t\t\t\t\t\t\t</a:xfrm>";
+                strSlideXml += "<a:xfrm>\n\t\t\t\t\t\t\t\t\t<a:off x=\"" + x + "\" y=\"" + y + "\" />\n\t\t\t\t\t\t\t\t\t<a:ext cx=\"" + cx + "\" cy=\"" + cy + "\" />\n\t\t\t\t\t\t\t\t\t<a:chOff x=\"" + x + "\" y=\"" + y + "\" />\n\t\t\t\t\t\t\t\t\t<a:chExt cx=\"" + cx + "\" cy=\"" + cy + "\" />\n\t\t\t\t\t\t\t\t</a:xfrm>";
                 strSlideXml += "</p:grpSpPr>";
                 //=========================================================================================================================
                 var shapeName = slideItemObj.options.shapeName ? encodeXmlEntities(slideItemObj.options.shapeName) : "Object" + (idx + 1);
@@ -2594,6 +2594,7 @@ function slideObjectToXml(slide) {
                 strSlideXml += ' <a:prstGeom prst="' + (rounding ? 'ellipse' : 'rect') + '"><a:avLst/></a:prstGeom>';
                 strSlideXml += '</p:spPr>';
                 strSlideXml += '</p:pic>';
+                strSlideXml += "</p:grpSp>";
                 break;
             default:
                 strSlideXml += '';
@@ -4745,7 +4746,7 @@ function addBoxDefinition(target, text, opts, isPlaceholder, opt) {
         strImgExtn = 'svg';
     }
     // STEP 2: Set type/path
-    newObject._type = SLIDE_OBJECT_TYPES.image;
+    //newObject._type = SLIDE_OBJECT_TYPES.image
     newObject.image = strImagePath || 'preencoded.png';
     // STEP 3: Set image properties & options
     // FIXME: Measure actual image when no intWidth/intHeight params passed

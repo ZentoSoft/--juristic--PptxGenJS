@@ -241,7 +241,7 @@ export default class Slide {
 
 	addBox(text: string | TextProps[], options?: TextPropsOptions, imageoptions?: ImageProps): Slide {
 		let textParam = typeof text === 'string' || typeof text === 'number' ? [{ text: text, options: options } as TextProps] : text
-		genObj.addBoxDefinition(this, textParam, options, false, imageoptions)
+		genObj.addBoxDefinition(this, textParam, options, false, imageoptions);
 		return this
 	}
 

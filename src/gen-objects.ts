@@ -1089,7 +1089,7 @@ export function addBoxDefinition(target: PresSlide, text: TextProps[], opts: Tex
 	}
 
 	// STEP 2: Set type/path
-	newObject._type = SLIDE_OBJECT_TYPES.image
+	//newObject._type = SLIDE_OBJECT_TYPES.image
 	newObject.image = strImagePath || 'preencoded.png'
 
 	// STEP 3: Set image properties & options

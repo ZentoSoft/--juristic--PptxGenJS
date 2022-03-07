@@ -977,14 +977,14 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 
 				// add group header
 				strSlideXml += "<p:grpSp> <p:nvGrpSpPr>";
-				strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId}" name="Group ${idx + 1}"></p:cNvPr>`;
+				strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId || idx + 2}" name="Group ${idx + 1}"></p:cNvPr>`;
 				strSlideXml += "<p:cNvGrpSpPr /> <p:nvPr /> </p:nvGrpSpPr>";
 				strSlideXml += "<p:grpSpPr>";
 				strSlideXml += `<a:xfrm>
-									<a:off x="${x}" y="${y} />
-									<a:ext cx="${cx}" cy=${cy} />
-									<a:chOff x="${x}" y="${y} />
-									<a:chExt cx="${cx}" cy=${cy} />
+									<a:off x="${x}" y="${y}" />
+									<a:ext cx="${cx}" cy="${cy}" />
+									<a:chOff x="${x}" y="${y}" />
+									<a:chExt cx="${cx}" cy="${cy}" />
 								</a:xfrm>`;
 				strSlideXml += "</p:grpSpPr>";
 
@@ -1232,11 +1232,12 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 				strSlideXml += ' <a:prstGeom prst="' + (rounding ? 'ellipse' : 'rect') + '"><a:avLst/></a:prstGeom>'
 				strSlideXml += '</p:spPr>'
 				strSlideXml += '</p:pic>'
+				strSlideXml += "</p:grpSp>"
 				break
 
 
 
-				strSlideXml += "</p:grpSp>"
+
 
 			default:
 				strSlideXml += ''
