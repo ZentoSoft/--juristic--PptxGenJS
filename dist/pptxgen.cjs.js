@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-07T16:54:47.525Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-07T17:09:36.311Z */
 'use strict';
 
 var JSZip = require('jszip');
@@ -4603,7 +4603,7 @@ function addTableDefinition(target, tableRows, options, slideLayout, presLayout,
         });
     }
 }
-function addBox(target, text, opts, isPlaceholder, opt) {
+function addBoxDefinition(target, text, opts, isPlaceholder, opt) {
     var newObject = {
         _type: SLIDE_OBJECT_TYPES.iconShape,
         shape: (opts && opts.shape) || SHAPE_TYPE.RECTANGLE,
@@ -5221,7 +5221,7 @@ var Slide = /** @class */ (function () {
      */
     Slide.prototype.addBox = function (text, options, imageoptions) {
         var textParam = typeof text === 'string' || typeof text === 'number' ? [{ text: text, options: options }] : text;
-        addBox(this, textParam, options, false, imageoptions);
+        addBoxDefinition(this, textParam, options, false, imageoptions);
         return this;
     };
     return Slide;

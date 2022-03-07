@@ -936,7 +936,7 @@ export function addTableDefinition(
 	}
 }
 
-export function addBox(target: PresSlide, text: TextProps[], opts: TextPropsOptions, isPlaceholder: boolean, opt: ImageProps) {
+export function addBoxDefinition(target: PresSlide, text: TextProps[], opts: TextPropsOptions, isPlaceholder: boolean, opt: ImageProps) {
 	let newObject: ISlideObject = {
 		_type: SLIDE_OBJECT_TYPES.iconShape,
 		shape: (opts && opts.shape) || SHAPE_TYPE.RECTANGLE,
