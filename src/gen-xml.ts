@@ -1238,11 +1238,6 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 
 				strSlideXml += "</p:grpSp>"
 
-
-
-
-
-
 			default:
 				strSlideXml += ''
 				break
