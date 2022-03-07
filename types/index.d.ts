@@ -1476,6 +1476,10 @@ declare namespace PptxGenJS {
 		 */
 		addText?: { text: any[]; options: {} }
 		/**
+		 * specialized function for image in box shapes
+		 */
+		addBox?: {text: any[]; options: {}; imageoptions:{}}
+		/**
 		 * Whether to enable auto-paging
 		 * - auto-paging creates new slides as content overflows a slide
 		 * @default true

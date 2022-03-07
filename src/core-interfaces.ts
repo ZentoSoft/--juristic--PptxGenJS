@@ -18,7 +18,7 @@ import { CHART_NAME, PLACEHOLDER_TYPE, SHAPE_NAME, SLIDE_OBJECT_TYPES, TEXT_HALI
 export type Coord = number | string
 
 export type IDCoord = {
-	id:number
+	id: number
 	posistion: PositionProps
 }
 
@@ -268,7 +268,7 @@ export interface ShapeLineProps extends ShapeFillProps {
 	/**
 	 * adjustments to the curve
 	 */
-	 curveadjust?: number[]
+	curveadjust?: number[]
 
 }
 // used by: chart, slide, table, text
@@ -665,8 +665,8 @@ export interface ShapeProps extends PositionProps {
 	 */
 	lineTail?: 'arrow' | 'diamond' | 'none' | 'oval' | 'stealth' | 'triangle'
 	/**
-     * id of shape
-     */
+	 * id of shape
+	 */
 	sId?: number
 }
 
@@ -692,6 +692,10 @@ export interface TableToSlidesProps extends TableProps {
 	 * Add a text object to slide(s) created during autopaging
 	 */
 	addText?: { text: any[]; options: {} }
+	/**
+		 * specialized function for image in box shapes
+		 */
+	addBox?: { text: any[]; options: {}; imageoptions: {} }
 	/**
 	 * Whether to enable auto-paging
 	 * - auto-paging creates new slides as content overflows a slide
@@ -1588,6 +1592,7 @@ export interface PresSlide extends SlideBaseProps {
 	addShape: Function
 	addTable: Function
 	addText: Function
+	addBox: Function
 
 	/**
 	 * Background color or image (`Color` | `path` | `data`)

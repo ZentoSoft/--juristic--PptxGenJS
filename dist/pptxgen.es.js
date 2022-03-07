@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-07T09:58:19.188Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-07T16:34:59.296Z */
 import JSZip from 'jszip';
 
 /*! *****************************************************************************
@@ -7438,6 +7438,7 @@ var PptxGenJS = /** @class */ (function () {
             addShape: null,
             addTable: null,
             addText: null,
+            addBox: null,
             //
             _name: null,
             _presLayout: this._presLayout,
