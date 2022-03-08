@@ -2382,7 +2382,7 @@ declare namespace PptxGenJS {
 		 */
 		addText(text: string | TextProps[], options?: TextPropsOptions): Slide
 
-		addbox(text: string|TextProps[], options?: TextBaseProps, imageoptions?: ImageProps): Slide
+		addBox(text: string|TextProps[], options?: TextBaseProps, imageoptions?: ImageProps): Slide
 
 		/**
 		 * Background color

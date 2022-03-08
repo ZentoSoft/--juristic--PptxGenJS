@@ -977,7 +977,7 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 
 				// add group header
 				strSlideXml += "<p:grpSp> <p:nvGrpSpPr>";
-				strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId || idx + 2}" name="Group ${idx + 1}"></p:cNvPr>`;
+				strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId+1000 || idx + 1000}" name="Group ${idx + 1}"></p:cNvPr>`;
 				strSlideXml += "<p:cNvGrpSpPr /> <p:nvPr /> </p:nvGrpSpPr>";
 				strSlideXml += "<p:grpSpPr>";
 				strSlideXml += `<a:xfrm>
@@ -1181,9 +1181,9 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 				strSlideXml += '<p:pic>'
 				strSlideXml += '  <p:nvPicPr>'
 				if (slideItemObj.options.sId != undefined) {
-					strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId}" name="Object ${idx + 1}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
+					strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId+2000}" name="Object ${idx + 2000}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
 				} else {
-					strSlideXml += `<p:cNvPr id="${idx + 2}" name="Object ${idx + 1}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
+					strSlideXml += `<p:cNvPr id="${idx + 2000}" name="Object ${idx + 1000}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
 				}
 				if (slideItemObj.hyperlink && slideItemObj.hyperlink.url)
 					strSlideXml += `<a:hlinkClick r:id="rId${slideItemObj.hyperlink._rId}" tooltip="${slideItemObj.hyperlink.tooltip ? encodeXmlEntities(slideItemObj.hyperlink.tooltip) : ''

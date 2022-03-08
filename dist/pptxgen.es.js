@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-07T18:34:35.029Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-08T08:07:52.394Z */
 import JSZip from 'jszip';
 
 /*! *****************************************************************************
@@ -2379,7 +2379,7 @@ function slideObjectToXml(slide) {
             case SLIDE_OBJECT_TYPES.iconShape:
                 // add group header
                 strSlideXml += "<p:grpSp> <p:nvGrpSpPr>";
-                strSlideXml += "<p:cNvPr id=\"" + (slideItemObj.options.sId || idx + 2) + "\" name=\"Group " + (idx + 1) + "\"></p:cNvPr>";
+                strSlideXml += "<p:cNvPr id=\"" + (slideItemObj.options.sId + 1000 || idx + 1000) + "\" name=\"Group " + (idx + 1) + "\"></p:cNvPr>";
                 strSlideXml += "<p:cNvGrpSpPr /> <p:nvPr /> </p:nvGrpSpPr>";
                 strSlideXml += "<p:grpSpPr>";
                 strSlideXml += "<a:xfrm>\n\t\t\t\t\t\t\t\t\t<a:off x=\"" + x + "\" y=\"" + y + "\" />\n\t\t\t\t\t\t\t\t\t<a:ext cx=\"" + cx + "\" cy=\"" + cy + "\" />\n\t\t\t\t\t\t\t\t\t<a:chOff x=\"" + x + "\" y=\"" + y + "\" />\n\t\t\t\t\t\t\t\t\t<a:chExt cx=\"" + cx + "\" cy=\"" + cy + "\" />\n\t\t\t\t\t\t\t\t</a:xfrm>";
@@ -2548,10 +2548,10 @@ function slideObjectToXml(slide) {
                 strSlideXml += '<p:pic>';
                 strSlideXml += '  <p:nvPicPr>';
                 if (slideItemObj.options.sId != undefined) {
-                    strSlideXml += "<p:cNvPr id=\"" + slideItemObj.options.sId + "\" name=\"Object " + (idx + 1) + "\" descr=\"" + encodeXmlEntities(imageOpts.altText || slideItemObj.image) + "\">";
+                    strSlideXml += "<p:cNvPr id=\"" + (slideItemObj.options.sId + 2000) + "\" name=\"Object " + (idx + 2000) + "\" descr=\"" + encodeXmlEntities(imageOpts.altText || slideItemObj.image) + "\">";
                 }
                 else {
-                    strSlideXml += "<p:cNvPr id=\"" + (idx + 2) + "\" name=\"Object " + (idx + 1) + "\" descr=\"" + encodeXmlEntities(imageOpts.altText || slideItemObj.image) + "\">";
+                    strSlideXml += "<p:cNvPr id=\"" + (idx + 2000) + "\" name=\"Object " + (idx + 1000) + "\" descr=\"" + encodeXmlEntities(imageOpts.altText || slideItemObj.image) + "\">";
                 }
                 if (slideItemObj.hyperlink && slideItemObj.hyperlink.url)
                     strSlideXml += "<a:hlinkClick r:id=\"rId" + slideItemObj.hyperlink._rId + "\" tooltip=\"" + (slideItemObj.hyperlink.tooltip ? encodeXmlEntities(slideItemObj.hyperlink.tooltip) : '') + "\"/>";
