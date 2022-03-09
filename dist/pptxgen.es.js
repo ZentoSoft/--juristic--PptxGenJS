@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-08T08:07:52.394Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-09T15:54:31.552Z */
 import JSZip from 'jszip';
 
 /*! *****************************************************************************
@@ -1568,7 +1568,7 @@ function FindById(list, id) {
             return element;
         }
     }
-    console.error("no element in list matching id");
+    throw "no element in list matching id";
 }
 /**
  * Transforms a slide or slideLayout to resulting XML string - Creates `ppt/slide*.xml`
@@ -2540,15 +2540,15 @@ function slideObjectToXml(slide) {
                 // LAST: Close SHAPE =======================================================
                 strSlideXml += '</p:sp>';
                 //================================================================================================================================
-                imageOpts = slideItemObj.options;
+                imageOpts = slideItemObj.options.image;
                 sizing = imageOpts.sizing,
                     rounding = imageOpts.rounding,
                     width = cx,
                     height = cy;
                 strSlideXml += '<p:pic>';
                 strSlideXml += '  <p:nvPicPr>';
-                if (slideItemObj.options.sId != undefined) {
-                    strSlideXml += "<p:cNvPr id=\"" + (slideItemObj.options.sId + 2000) + "\" name=\"Object " + (idx + 2000) + "\" descr=\"" + encodeXmlEntities(imageOpts.altText || slideItemObj.image) + "\">";
+                if (slideItemObj.options.image.sId != undefined) {
+                    strSlideXml += "<p:cNvPr id=\"" + slideItemObj.options.image.sId + "\" name=\"Object " + (idx + 2000) + "\" descr=\"" + encodeXmlEntities(imageOpts.altText || slideItemObj.image) + "\">";
                 }
                 else {
                     strSlideXml += "<p:cNvPr id=\"" + (idx + 2000) + "\" name=\"Object " + (idx + 1000) + "\" descr=\"" + encodeXmlEntities(imageOpts.altText || slideItemObj.image) + "\">";
@@ -2588,13 +2588,14 @@ function slideObjectToXml(slide) {
                 strSlideXml += '</p:blipFill>';
                 strSlideXml += '<p:spPr>';
                 strSlideXml += ' <a:xfrm' + locationAttr + '>';
-                strSlideXml += '  <a:off x="' + x + '" y="' + y + '"/>';
-                strSlideXml += '  <a:ext cx="' + width + '" cy="' + height + '"/>';
+                strSlideXml += '  <a:off x="' + getSmartParseNumber(slideItemObj.options.image.x, "X", slide._presLayout) + '" y="' + getSmartParseNumber(slideItemObj.options.image.y, "Y", slide._presLayout) + '"/>';
+                strSlideXml += '  <a:ext cx="' + getSmartParseNumber(slideItemObj.options.image.w, "X", slide._presLayout) + '" cy="' + getSmartParseNumber(slideItemObj.options.image.h, "Y", slide._presLayout) + '"/>';
                 strSlideXml += ' </a:xfrm>';
                 strSlideXml += ' <a:prstGeom prst="' + (rounding ? 'ellipse' : 'rect') + '"><a:avLst/></a:prstGeom>';
                 strSlideXml += '</p:spPr>';
                 strSlideXml += '</p:pic>';
                 strSlideXml += "</p:grpSp>";
+                console.log(slideItemObj.options.image);
                 break;
             default:
                 strSlideXml += '';
@@ -4752,7 +4753,7 @@ function addBoxDefinition(target, text, opts, isPlaceholder, opt) {
     // FIXME: Measure actual image when no intWidth/intHeight params passed
     // ....: This is an async process: we need to make getSizeFromImage use callback, then set H/W...
     // if ( !intWidth || !intHeight ) { var imgObj = getSizeFromImage(strImagePath);
-    newObject.options = {
+    newObject.options.image = {
         x: intPosX || 0,
         y: intPosY || 0,
         w: intWidth || 1,
@@ -4764,6 +4765,7 @@ function addBoxDefinition(target, text, opts, isPlaceholder, opt) {
         rotate: opt.rotate || 0,
         flipV: opt.flipV || false,
         flipH: opt.flipH || false,
+        sId: opt.sId
     };
     // STEP 4: Add this image to this Slide Rels (rId/rels count spans all slides! Count all images to get next rId)
     if (strImgExtn === 'svg') {

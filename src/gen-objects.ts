@@ -1096,7 +1096,7 @@ export function addBoxDefinition(target: PresSlide, text: TextProps[], opts: Tex
 	// FIXME: Measure actual image when no intWidth/intHeight params passed
 	// ....: This is an async process: we need to make getSizeFromImage use callback, then set H/W...
 	// if ( !intWidth || !intHeight ) { var imgObj = getSizeFromImage(strImagePath);
-	newObject.options = {
+	newObject.options.image = {
 		x: intPosX || 0,
 		y: intPosY || 0,
 		w: intWidth || 1,
@@ -1108,6 +1108,7 @@ export function addBoxDefinition(target: PresSlide, text: TextProps[], opts: Tex
 		rotate: opt.rotate || 0,
 		flipV: opt.flipV || false,
 		flipH: opt.flipH || false,
+		sId: opt.sId
 	}
 
 	// STEP 4: Add this image to this Slide Rels (rId/rels count spans all slides! Count all images to get next rId)

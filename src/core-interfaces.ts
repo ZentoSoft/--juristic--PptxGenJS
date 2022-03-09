@@ -490,6 +490,7 @@ export interface ImageProps extends PositionProps, DataOrPathProps {
 	/**
 	 * Image sizing options
 	 */
+	sId?: number
 	sizing?: {
 		/**
 		 * Sizing type
@@ -1068,7 +1069,8 @@ export interface TextPropsOptions extends PositionProps, DataOrPathProps, TextBa
 	/**
 	 * @deprecated v3.3.0 - use `line.endArrowType`
 	 */
-	lineTail?: 'none' | 'arrow' | 'diamond' | 'oval' | 'stealth' | 'triangle'
+	lineTail?: 'none' | 'arrow' | 'diamond' | 'oval' | 'stealth' | 'triangle',
+	sId?: number
 }
 export interface TextProps {
 	text?: string
@@ -1553,6 +1555,7 @@ export interface ObjectOptions extends ImageProps, PositionProps, ShapeProps, Ta
 	margin?: Margin
 	colW?: number | number[] // table
 	rowH?: number | number[] // table
+	image?: any
 }
 export interface SlideBaseProps {
 	_bkgdImgRid?: number

@@ -95,7 +95,7 @@ function FindById(list: IDCoord[], id: number): IDCoord {
 			return element
 		}
 	}
-	console.error("no element in list matching id")
+	throw "no element in list matching id";
 }
 
 /**
@@ -1172,7 +1172,7 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 
 				//================================================================================================================================
 
-				imageOpts = slideItemObj.options as ImageProps
+				imageOpts = slideItemObj.options.image as ImageProps
 				sizing = imageOpts.sizing,
 					rounding = imageOpts.rounding,
 					width = cx,
@@ -1180,8 +1180,8 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 
 				strSlideXml += '<p:pic>'
 				strSlideXml += '  <p:nvPicPr>'
-				if (slideItemObj.options.sId != undefined) {
-					strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId+2000}" name="Object ${idx + 2000}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
+				if (slideItemObj.options.image.sId != undefined) {
+					strSlideXml += `<p:cNvPr id="${slideItemObj.options.image.sId}" name="Object ${idx + 2000}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
 				} else {
 					strSlideXml += `<p:cNvPr id="${idx + 2000}" name="Object ${idx + 1000}" descr="${encodeXmlEntities(imageOpts.altText || slideItemObj.image)}">`
 				}
@@ -1226,13 +1226,14 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 				strSlideXml += '</p:blipFill>'
 				strSlideXml += '<p:spPr>'
 				strSlideXml += ' <a:xfrm' + locationAttr + '>'
-				strSlideXml += '  <a:off x="' + x + '" y="' + y + '"/>'
-				strSlideXml += '  <a:ext cx="' + width + '" cy="' + height + '"/>'
+				strSlideXml += '  <a:off x="' + getSmartParseNumber(slideItemObj.options.image.x , "X", slide._presLayout) +  '" y="' + getSmartParseNumber(slideItemObj.options.image.y,"Y",slide._presLayout) + '"/>'
+				strSlideXml += '  <a:ext cx="' + getSmartParseNumber(slideItemObj.options.image.w,"X", slide._presLayout) + '" cy="' + getSmartParseNumber(slideItemObj.options.image.h,"Y",slide._presLayout) + '"/>'
 				strSlideXml += ' </a:xfrm>'
 				strSlideXml += ' <a:prstGeom prst="' + (rounding ? 'ellipse' : 'rect') + '"><a:avLst/></a:prstGeom>'
 				strSlideXml += '</p:spPr>'
 				strSlideXml += '</p:pic>'
 				strSlideXml += "</p:grpSp>"
+				console.log(slideItemObj.options.image)
 				break
 
 
