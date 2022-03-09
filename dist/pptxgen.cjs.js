@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-09T15:54:31.537Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-09T18:03:59.428Z */
 'use strict';
 
 var JSZip = require('jszip');
@@ -2601,7 +2601,6 @@ function slideObjectToXml(slide) {
                 strSlideXml += '</p:spPr>';
                 strSlideXml += '</p:pic>';
                 strSlideXml += "</p:grpSp>";
-                console.log(slideItemObj.options.image);
                 break;
             default:
                 strSlideXml += '';

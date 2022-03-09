@@ -1233,7 +1233,6 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 				strSlideXml += '</p:spPr>'
 				strSlideXml += '</p:pic>'
 				strSlideXml += "</p:grpSp>"
-				console.log(slideItemObj.options.image)
 				break
 
 
