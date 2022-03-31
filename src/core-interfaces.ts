@@ -268,7 +268,7 @@ export interface ShapeLineProps extends ShapeFillProps {
 	/**
 	 * adjustments to the curve
 	 */
-	curveadjust?: number[]
+	curveadjust?: boolean
 
 }
 // used by: chart, slide, table, text

@@ -291,9 +291,24 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 			if (placeholderObj.options.h || placeholderObj.options.h === 0) cy = getSmartParseNumber(placeholderObj.options.h, 'Y', slide._presLayout)
 		}
 		//
-		if (slideItemObj.options.flipH) locationAttr += ' flipH="1"'
-		if (slideItemObj.options.flipV) locationAttr += ' flipV="1"'
-		if (slideItemObj.options.rotate) locationAttr += ' rot="' + convertRotationDegrees(slideItemObj.options.rotate) + '"'
+		if (slideItemObj.options.line == undefined) {
+			if (slideItemObj.options.flipH) locationAttr += ' flipH="1"'
+			if (slideItemObj.options.flipV) locationAttr += ' flipV="1"'
+			if (slideItemObj.options.rotate) locationAttr += ' rot="' + convertRotationDegrees(slideItemObj.options.rotate) + '"'
+		} else {
+			if (slideItemObj.options.line.curveadjust) {
+				if (slideItemObj.options.flipH) locationAttr += ' flipH="1"'
+				if (slideItemObj.options.flipV) locationAttr += ' flipV="1"'
+				locationAttr += ' rot="' + convertRotationDegrees(180) + '"'
+			} else {
+				if (slideItemObj.options.flipH) locationAttr += ' flipH="1"'
+				if (slideItemObj.options.flipV) locationAttr += ' flipV="1"'
+				if (slideItemObj.options.rotate) locationAttr += ' rot="' + convertRotationDegrees(slideItemObj.options.rotate) + '"'
+			}
+		}
+
+
+
 
 		let imageOpts = slideItemObj.options as ImageProps
 		let sizing = null,
@@ -595,15 +610,6 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 						if (slideItemObj.options.arcThicknessRatio) {
 							strSlideXml += `<a:gd name="adj3" fmla="val ${Math.round(slideItemObj.options.arcThicknessRatio * 50000)}" />`
 						}
-					}
-
-					if (slideItemObj.options.line.curveadjust) {
-						let i = 1
-						for (const adjustments in slideItemObj.options.line.curveadjust) {
-							strSlideXml += `<a:gd name="adj${i}" fmla="val ${getSmartParseNumber(adjustments, "X", slide._presLayout)}" />`
-							i++
-						}
-
 					}
 
 
@@ -977,7 +983,7 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 
 				// add group header
 				strSlideXml += "<p:grpSp> <p:nvGrpSpPr>";
-				strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId+1000 || idx + 1000}" name="Group ${idx + 1}"></p:cNvPr>`;
+				strSlideXml += `<p:cNvPr id="${slideItemObj.options.sId + 1000 || idx + 1000}" name="Group ${idx + 1}"></p:cNvPr>`;
 				strSlideXml += "<p:cNvGrpSpPr /> <p:nvPr /> </p:nvGrpSpPr>";
 				strSlideXml += "<p:grpSpPr>";
 				strSlideXml += `<a:xfrm>
@@ -1226,8 +1232,8 @@ function slideObjectToXml(slide: PresSlide | SlideLayout): string {
 				strSlideXml += '</p:blipFill>'
 				strSlideXml += '<p:spPr>'
 				strSlideXml += ' <a:xfrm' + locationAttr + '>'
-				strSlideXml += '  <a:off x="' + getSmartParseNumber(slideItemObj.options.image.x , "X", slide._presLayout) +  '" y="' + getSmartParseNumber(slideItemObj.options.image.y,"Y",slide._presLayout) + '"/>'
-				strSlideXml += '  <a:ext cx="' + getSmartParseNumber(slideItemObj.options.image.w,"X", slide._presLayout) + '" cy="' + getSmartParseNumber(slideItemObj.options.image.h,"Y",slide._presLayout) + '"/>'
+				strSlideXml += '  <a:off x="' + getSmartParseNumber(slideItemObj.options.image.x, "X", slide._presLayout) + '" y="' + getSmartParseNumber(slideItemObj.options.image.y, "Y", slide._presLayout) + '"/>'
+				strSlideXml += '  <a:ext cx="' + getSmartParseNumber(slideItemObj.options.image.w, "X", slide._presLayout) + '" cy="' + getSmartParseNumber(slideItemObj.options.image.h, "Y", slide._presLayout) + '"/>'
 				strSlideXml += ' </a:xfrm>'
 				strSlideXml += ' <a:prstGeom prst="' + (rounding ? 'ellipse' : 'rect') + '"><a:avLst/></a:prstGeom>'
 				strSlideXml += '</p:spPr>'

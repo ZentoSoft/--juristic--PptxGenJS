@@ -1,4 +1,4 @@
-/* PptxGenJS 3.10.0-beta @ 2022-03-09T18:03:59.440Z */
+/* PptxGenJS 3.10.0-beta @ 2022-03-31T15:57:53.086Z */
 import JSZip from 'jszip';
 
 /*! *****************************************************************************
@@ -1753,12 +1753,31 @@ function slideObjectToXml(slide) {
                 cy = getSmartParseNumber(placeholderObj.options.h, 'Y', slide._presLayout);
         }
         //
-        if (slideItemObj.options.flipH)
-            locationAttr += ' flipH="1"';
-        if (slideItemObj.options.flipV)
-            locationAttr += ' flipV="1"';
-        if (slideItemObj.options.rotate)
-            locationAttr += ' rot="' + convertRotationDegrees(slideItemObj.options.rotate) + '"';
+        if (slideItemObj.options.line == undefined) {
+            if (slideItemObj.options.flipH)
+                locationAttr += ' flipH="1"';
+            if (slideItemObj.options.flipV)
+                locationAttr += ' flipV="1"';
+            if (slideItemObj.options.rotate)
+                locationAttr += ' rot="' + convertRotationDegrees(slideItemObj.options.rotate) + '"';
+        }
+        else {
+            if (slideItemObj.options.line.curveadjust) {
+                if (slideItemObj.options.flipH)
+                    locationAttr += ' flipH="1"';
+                if (slideItemObj.options.flipV)
+                    locationAttr += ' flipV="1"';
+                locationAttr += ' rot="' + convertRotationDegrees(180) + '"';
+            }
+            else {
+                if (slideItemObj.options.flipH)
+                    locationAttr += ' flipH="1"';
+                if (slideItemObj.options.flipV)
+                    locationAttr += ' flipV="1"';
+                if (slideItemObj.options.rotate)
+                    locationAttr += ' rot="' + convertRotationDegrees(slideItemObj.options.rotate) + '"';
+            }
+        }
         var imageOpts = slideItemObj.options;
         var sizing = null, rounding = null, width = null, height = null;
         // B: Add OBJECT to the current Slide
@@ -2039,13 +2058,6 @@ function slideObjectToXml(slide) {
                         }
                         if (slideItemObj.options.arcThicknessRatio) {
                             strSlideXml += "<a:gd name=\"adj3\" fmla=\"val " + Math.round(slideItemObj.options.arcThicknessRatio * 50000) + "\" />";
-                        }
-                    }
-                    if (slideItemObj.options.line.curveadjust) {
-                        var i = 1;
-                        for (var adjustments in slideItemObj.options.line.curveadjust) {
-                            strSlideXml += "<a:gd name=\"adj" + i + "\" fmla=\"val " + getSmartParseNumber(adjustments, "X", slide._presLayout) + "\" />";
-                            i++;
                         }
                     }
                     strSlideXml += '</a:avLst></a:prstGeom>';
@@ -4318,7 +4330,7 @@ function addShapeDefinition(target, shapeName, opts) {
         sourceAnchorPos: options.line.sourceAnchorPos || (options.line.sourceAnchorPos === 0 ? 0 : null),
         targetAnchorPos: options.line.targetAnchorPos || (options.line.targetAnchorPos === 0 ? 0 : null),
         isConnector: options.line && (options.line.sourceId != null || options.line.targetId != null),
-        curveadjust: options.line.curveadjust || null
+        curveadjust: options.line.curveadjust || false
     };
     if (typeof options.line === 'object' && options.line.type !== 'none')
         options.line = newLineOpts;
